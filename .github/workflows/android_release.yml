@@ -1,4 +1,4 @@
-name: Android Release
+name: Android Release Debug
 
 on:
   push:
@@ -36,16 +36,41 @@ jobs:
       - name: Flutter doctor
         run: flutter doctor -v
 
+      - name: Project files check
+        run: |
+          pwd
+          ls -la
+          ls -la android || true
+          ls -la android/app || true
+
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build release APK
-        run: flutter build apk --release
+      - name: Build release APK with full logs
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter build apk --release -v 2>&1 | tee build-log.txt
 
       - name: Check APK output
-        run: ls -lah build/app/outputs/flutter-apk/
+        if: always()
+        run: |
+          echo "Flutter APK folder:"
+          ls -lah build/app/outputs/flutter-apk/ || true
+
+          echo "Android APK folder:"
+          ls -lah build/app/outputs/apk/release/ || true
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-log
+          path: build-log.txt
+          if-no-files-found: warn
 
       - name: Upload release APK
+        if: success()
         uses: actions/upload-artifact@v7
         with:
           name: release-apk
