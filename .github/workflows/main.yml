@@ -40,11 +40,11 @@ jobs:
 
       - name: Build iOS IPA (User Flavor)
         run: |
-          # Pass the flavor and target here as well
           flutter build ios --release --no-codesign --flavor user -t lib/main_user.dart
           cd build/ios/iphoneos
           mkdir Payload
-          mv Runner.app Payload/
+          # Use a wildcard to move whatever .app folder was generated, instead of hardcoding Runner.app
+          mv *.app Payload/
           zip -r app.ipa Payload
 
       - name: Push to Releases
