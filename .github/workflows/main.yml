@@ -35,14 +35,15 @@ jobs:
           # Removed architecture: x64 so it natively uses macos-latest (Apple Silicon)
 
       - name: Build Android APK
-        run: flutter build apk --release --split-per-abi
+        # Added -t lib/main_user.dart to point to the correct flavor entry point
+        run: flutter build apk --release --split-per-abi -t lib/main_user.dart
 
       - name: Build iOS IPA
+        # Added -t lib/main_user.dart here as well
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign -t lib/main_user.dart
           cd build/ios/iphoneos
           mkdir Payload
-          # Use mv instead of ln -s so the actual app bundle is zipped
           mv Runner.app Payload/
           zip -r app.ipa Payload
 
