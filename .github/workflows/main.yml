@@ -34,14 +34,14 @@ jobs:
           channel: 'stable'
           # Removed architecture: x64 so it natively uses macos-latest (Apple Silicon)
 
-      - name: Build Android APK
-        # Added -t lib/main_user.dart to point to the correct flavor entry point
-        run: flutter build apk --release --split-per-abi -t lib/main_user.dart
+      - name: Build Android APK (User Flavor)
+        # We explicitly declare the flavor AND the target entry point
+        run: flutter build apk --release --flavor user -t lib/main_user.dart --split-per-abi
 
-      - name: Build iOS IPA
-        # Added -t lib/main_user.dart here as well
+      - name: Build iOS IPA (User Flavor)
         run: |
-          flutter build ios --release --no-codesign -t lib/main_user.dart
+          # Pass the flavor and target here as well
+          flutter build ios --release --no-codesign --flavor user -t lib/main_user.dart
           cd build/ios/iphoneos
           mkdir Payload
           mv Runner.app Payload/
@@ -50,7 +50,8 @@ jobs:
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/*-release.apk,build/ios/iphoneos/app.ipa"
+          # Use the double-star wildcard (**) to search all subdirectories
+          # because Gradle puts flavored APKs in folders like 'build/app/outputs/flutter-apk/user/release/'
+          artifacts: "build/app/outputs/flutter-apk/**/*.apk,build/ios/iphoneos/app.ipa"
           tag: v1.0.${{ github.run_number }}
-          # If you are using the default GitHub token, use secrets.GITHUB_TOKEN
           token: ${{ secrets.GITHUB_TOKEN }}
